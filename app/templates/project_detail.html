@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Project Details</title>
+<link href="{{ url_for('static', filename='project_detail.css') }}" rel="stylesheet" />
+</head>
+<body>
+  <header>
+    <button id="backBtn">Back to Projects</button>
+    <button id="logoutBtn">Logout</button>
+  </header>
+
+  <main>
+    <h1 id="projectName"></h1>
+    <p id="projectDescription"></p>
+    <p><strong>Created:</strong> <span id="createdAt"></span></p>
+
+    <h2>Tasks</h2>
+    <table id="tasksTable">
+      <thead>
+        <tr>
+          <th>ID</th><th>Title</th><th>Status</th><th>Assigned User</th><th>Due Date</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+  <script>
+    // get token and project id
+    const token = localStorage.getItem('access_token');
+    console.log("Token on project detail page:", token);
+
+    // project_id was injected into template as integer
+    const projectId = {{ project_id | tojson }};
+    // OR fallback if Jinja not used: const projectId = window.location.pathname.split('/').pop();
+
+    if (!token) {
+      console.warn('No token found — redirecting to login');
+      alert('Not logged in');
+      window.location.href = '/';
+      // stop further execution
+    } else if (!projectId) {
+      alert('No project specified');
+      window.location.href = '/home';
+    } else {
+      // only call fetch if token & projectId exist
+      fetchProjectDetails();
+    }
+
+    async function fetchProjectDetails() {
+      try {
+        console.log('Calling API /projects/' + projectId + ' with token:', token && token.slice(0,20) + '...');
+
+        const res = await fetch(`/projects/${projectId}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log('Project details response status:', res.status);
+
+        if (res.status === 401) {
+          // helpful debug
+          const err = await res.json().catch(()=>({}));
+          console.error('Unauthorized response body:', err);
+          alert('Authorization failed — please login again.');
+          localStorage.removeItem('access_token');
+          window.location.href = '/';
+          return;
+        }
+
+        if (!res.ok) {
+          // other errors
+          alert('Failed to load project details. Please try again.');
+          return;
+        }
+
+        const project = await res.json();
+        document.getElementById('projectName').textContent = project.name || '';
+        document.getElementById('projectDescription').textContent = project.description || '';
+        document.getElementById('createdAt').textContent = project.created_at ? new Date(project.created_at).toLocaleString() : '';
+
+        populateTasks(project.tasks || []);
+      } catch (err) {
+        console.error('Fetch error:', err);
+        alert('Network error while loading project details.');
+      }
+    }
+
+    function populateTasks(tasks) {
+      const tbody = document.querySelector('#tasksTable tbody');
+      tbody.innerHTML = '';
+      tasks.forEach(task => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${task.id}</td>
+          <td>${task.title}</td>
+          <td>${task.status}</td>
+          <td>${task.assigned_user ? task.assigned_user.username : 'Unassigned'}</td>
+          <td>${task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('access_token');
+      alert('Logged out!');
+      window.location.href = '/';
+    });
+
+    document.getElementById('backBtn').addEventListener('click', () => {
+      const usernameFromTemplate = "{{ username }}";
+      if (usernameFromTemplate && usernameFromTemplate.trim()) {
+        window.location.href = `/home?username=${encodeURIComponent(usernameFromTemplate)}`;
+      } else {
+        window.location.href = '/home';
+      }
+    });
+  </script>
+
+</body>
+</html>

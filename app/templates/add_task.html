@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Task</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='add_task.css') }}">
+</head>
+<body>
+<div class="container">
+    <h2>Add New Task</h2>
+    <form id="taskForm">
+        <label for="title">Task Title</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3"></textarea>
+
+        <label for="priority">Priority</label>
+        <select id="priority" name="priority">
+            <option value="">Select priority</option>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+        </select>
+
+        <label for="project">Select Project</label>
+        <select id="project_id" name="project_id" required>
+            <option value="">Loading projects...</option>
+        </select>
+
+        <label for="assigned_user">Assigned User (Email)</label>
+        <input type="email" id="assigned_user" name="assigned_user" placeholder="Enter email" required>
+
+        <label for="status">Status</label>
+        <select id="status" name="status">
+            <option value="pending">Pending</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+        </select>
+
+        <label for="due_date">Due Date</label>
+        <input type="date" id="due_date" name="due_date">
+
+        <button type="submit">Add Task</button>
+        <a href="/home" class="cancel-btn">Cancel</a>
+    </form>
+</div>
+
+<script>
+    // Load token
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        alert('Please log in first');
+        window.location.href = '/';
+    }
+
+    // Fetch projects for dropdown
+    async function loadProjects() {
+        const res = await fetch('/projects/', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const projectSelect = document.getElementById('project_id');
+        projectSelect.innerHTML = '';
+        data.forEach(proj => {
+            const opt = document.createElement('option');
+            opt.value = proj.id;
+            opt.textContent = proj.name;
+            projectSelect.appendChild(opt);
+        });
+    }
+
+    loadProjects();
+
+    // Submit form
+    document.getElementById('taskForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = {
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            priority: document.getElementById('priority').value,
+            project_id: document.getElementById('project_id').value,
+            assigned_user: document.getElementById('assigned_user').value,
+            status: document.getElementById('status').value,
+            due_date: document.getElementById('due_date').value || null
+        };
+
+        const res = await fetch('/tasks/', { // <-- trailing slash added
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (res.ok) {
+            alert('Task added successfully!');
+            window.location.href = '/home';
+        } else {
+            const err = await res.json();
+            alert(err.message || 'Error adding task');
+        }
+    });
+</script>
+</body>
+</html>

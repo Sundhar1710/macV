@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Projects - Task Manager</title>
+<link href="{{ url_for('static', filename='home.css') }}" rel="stylesheet" />
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Welcome, {{ username }}</h1>
+    <button id="logoutBtn">Logout</button>
+    <a href="{{ url_for('add_task_page') }}" id="addTaskBtn" class="add-task-btn">Add Task</a>
+  </header>
+
+  <main>
+    <h2>Your Projects</h2>
+    <table id="projectsTable">
+      <thead>
+        <tr>
+          <th>ID</th><th>Name</th><th>Description</th><th>Created Date</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+<script>
+  AOS.init();
+  // Check for token
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    alert('Not logged in');
+    window.location.href = '/';
+  }
+  const username = "{{ username }}";
+
+  // Fetch projects for current user
+  async function fetchProjects() {
+    const res = await fetch('/projects', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) {
+      alert('Failed to load projects. Please login again.');
+      localStorage.removeItem('access_token');
+      window.location.href = '/';
+      return;
+    }
+    const projects = await res.json();
+    populateTable(projects);
+  }
+
+  // Populate projects table
+  function populateTable(projects) {
+    const tbody = document.querySelector('#projectsTable tbody');
+    tbody.innerHTML = '';
+
+    projects.forEach(project => {
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td>${project.id}</td>
+        <td><a href="#" class="project-link" data-id="${project.id}">${project.name}</a></td>
+        <td>${project.description}</td>
+        <td>${new Date(project.created_at).toLocaleDateString()}</td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+    document.querySelectorAll('.project-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const projectId = e.target.dataset.id;
+        localStorage.setItem('current_project_id', projectId);
+        const usernameParam = encodeURIComponent(username || '');
+        window.location.href = `/project_detail/${projectId}?username=${usernameParam}`;
+      });
+    });
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('access_token');
+    alert('Logged out!');
+    window.location.href = '/';
+  });
+
+  fetchProjects();
+</script>
+</body>
+</html>

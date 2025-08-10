@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Task Manager</title>
+  <link href="{{ url_for('static', filename='login.css') }}" rel="stylesheet" />
+</head>
+<body>
+  <div class="login-container" data-aos="fade-up">
+    <h2>Login to Task Manager</h2>
+    <form id="loginForm" action="/auth/login" method="POST">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" placeholder="Enter username" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Enter password" required />
+
+      <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <a href="/register">Register here</a></p>
+  </div>
+
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    AOS.init();
+    const form = document.getElementById('loginForm');
+    form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const username = form.username.value.trim();
+  const password = form.password.value;
+
+  try {
+    const response = await fetch('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const json = await response.json();
+    console.log("Login response:", json);
+
+    if (response.ok && json.access_token) {
+      localStorage.setItem('access_token', json.access_token);
+      window.location.href = `/home?username=${encodeURIComponent(username)}`;
+    } else {
+      alert(json.message || 'Login failed');
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    alert("Login request failed.");
+  }
+});
+  </script>
+</body>
+</html>
