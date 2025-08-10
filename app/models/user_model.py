@@ -7,7 +7,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(512), nullable=False)
 
-    # Relationships
+
     tasks = db.relationship('Task', backref='user', lazy=True)
     projects = db.relationship('Project', backref='user', lazy=True)
 

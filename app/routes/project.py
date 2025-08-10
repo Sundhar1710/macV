@@ -6,7 +6,6 @@ from app.models.task_model import Task
 
 project_bp = Blueprint('project_bp', __name__, url_prefix="/projects")
 
-# Create a new project
 @project_bp.route('/', methods=['POST'])
 @jwt_required()
 def create_project():
@@ -25,7 +24,7 @@ def create_project():
     return jsonify({'message': 'Project created successfully'}), 201
 
 
-# Get all projects for current user
+
 @project_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_projects():
@@ -44,7 +43,7 @@ def get_projects():
     return jsonify(result), 200
 
 
-# Get project details with all tasks
+
 @project_bp.route('/<int:project_id>', methods=['GET'])
 @jwt_required()
 def get_project_details(project_id):
@@ -71,7 +70,6 @@ def get_project_details(project_id):
     }), 200
 
 
-# Update project
 @project_bp.route('/<int:project_id>', methods=['PATCH'])
 @jwt_required()
 def update_project(project_id):
@@ -89,7 +87,7 @@ def update_project(project_id):
     return jsonify({'message': 'Project updated successfully'}), 200
 
 
-# Delete project
+
 @project_bp.route('/<int:project_id>', methods=['DELETE'])
 @jwt_required()
 def delete_project(project_id):

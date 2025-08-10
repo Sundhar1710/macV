@@ -3,12 +3,11 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from app.models.task_model import Task
 from datetime import datetime
-from app.models.project_model import Project  # Assuming it exists
+from app.models.project_model import Project  
 
 task_bp = Blueprint('task_bp', __name__, url_prefix="/tasks")
 
 
-# Helper to serialize task objects
 def serialize_task(task):
     return {
         'id': task.id,
@@ -22,8 +21,8 @@ def serialize_task(task):
         'due_date': task.due_date
     }
 
-# Create Task
-@task_bp.route('/', methods=['POST'])  # <-- keep as '/', matches blueprint /tasks/
+
+@task_bp.route('/', methods=['POST'])  
 @jwt_required()
 def create_task():
     data = request.get_json()
@@ -51,14 +50,12 @@ def create_task():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-# Get all tasks
 @task_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_tasks():
     user_id = get_jwt_identity()
     q = Task.query.filter_by(user_id=user_id)
 
-    # Filtering
     status = request.args.get('status')
     if status:
         q = q.filter_by(status=status.lower())
@@ -71,14 +68,13 @@ def get_tasks():
     if project_id:
         q = q.filter_by(project_id=project_id)
 
-    # Sorting
+
     sort_by = request.args.get('sort_by', 'id')
     order = request.args.get('order', 'desc')
     if hasattr(Task, sort_by):
         col = getattr(Task, sort_by)
         q = q.order_by(col.desc() if order == 'desc' else col.asc())
 
-    # Pagination
     page = max(int(request.args.get('page', 1)), 1)
     limit = max(int(request.args.get('limit', 10)), 1)
     paginated = q.paginate(page=page, per_page=limit, error_out=False)
@@ -90,7 +86,6 @@ def get_tasks():
         'tasks': [serialize_task(t) for t in paginated.items]
     }), 200
 
-# Get single task
 @task_bp.route('/<int:task_id>', methods=['GET'])
 @jwt_required()
 def get_task(task_id):
@@ -100,7 +95,6 @@ def get_task(task_id):
         return jsonify({'message': 'Task not found'}), 404
     return jsonify(serialize_task(task)), 200
 
-# Update task
 @task_bp.route('/<int:task_id>', methods=['PATCH'])
 @jwt_required()
 def update_task(task_id):
@@ -120,14 +114,12 @@ def update_task(task_id):
         if field in data:
             setattr(task, field, data[field])
 
-    # Keep is_completed in sync with status
     if 'status' in data:
         task.is_completed = (task.status.lower() == 'completed')
 
     db.session.commit()
     return jsonify({'message': 'Task updated successfully', 'task': serialize_task(task)}), 200
 
-# Delete task
 @task_bp.route('/<int:task_id>', methods=['DELETE'])
 @jwt_required()
 def delete_task(task_id):

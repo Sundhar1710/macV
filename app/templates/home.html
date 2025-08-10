@@ -28,7 +28,7 @@
 
 <script>
   AOS.init();
-  // Check for token
+
   const token = localStorage.getItem('access_token');
   if (!token) {
     alert('Not logged in');
@@ -36,7 +36,6 @@
   }
   const username = "{{ username }}";
 
-  // Fetch projects for current user
   async function fetchProjects() {
     const res = await fetch('/projects', {
       headers: {
@@ -53,7 +52,7 @@
     populateTable(projects);
   }
 
-  // Populate projects table
+
   function populateTable(projects) {
     const tbody = document.querySelector('#projectsTable tbody');
     tbody.innerHTML = '';

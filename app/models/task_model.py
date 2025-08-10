@@ -8,9 +8,9 @@ class Task(db.Model):
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text)
     status = db.Column(db.String(20), default="pending")
-    priority = db.Column(db.String(50))  # Low, Medium, High
+    priority = db.Column(db.String(50))  
     is_completed = db.Column(db.Boolean, default=False)
-    assigned_user_email = db.Column(db.String(255), nullable=True)   # 👈 New column
+    assigned_user_email = db.Column(db.String(255), nullable=True)   
     due_date = db.Column(db.DateTime)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

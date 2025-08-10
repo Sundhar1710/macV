@@ -48,14 +48,14 @@
 </div>
 
 <script>
-    // Load token
+
     const token = localStorage.getItem('access_token');
     if (!token) {
         alert('Please log in first');
         window.location.href = '/';
     }
 
-    // Fetch projects for dropdown
+
     async function loadProjects() {
         const res = await fetch('/projects/', {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -73,7 +73,6 @@
 
     loadProjects();
 
-    // Submit form
     document.getElementById('taskForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = {
@@ -86,7 +85,7 @@
             due_date: document.getElementById('due_date').value || null
         };
 
-        const res = await fetch('/tasks/', { // <-- trailing slash added
+        const res = await fetch('/tasks/', { 
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

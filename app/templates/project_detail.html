@@ -28,24 +28,21 @@
     </table>
   </main>
   <script>
-    // get token and project id
     const token = localStorage.getItem('access_token');
     console.log("Token on project detail page:", token);
 
-    // project_id was injected into template as integer
     const projectId = {{ project_id | tojson }};
-    // OR fallback if Jinja not used: const projectId = window.location.pathname.split('/').pop();
 
     if (!token) {
       console.warn('No token found — redirecting to login');
       alert('Not logged in');
       window.location.href = '/';
-      // stop further execution
+    
     } else if (!projectId) {
       alert('No project specified');
       window.location.href = '/home';
     } else {
-      // only call fetch if token & projectId exist
+    
       fetchProjectDetails();
     }
 
@@ -64,7 +61,7 @@
         console.log('Project details response status:', res.status);
 
         if (res.status === 401) {
-          // helpful debug
+        
           const err = await res.json().catch(()=>({}));
           console.error('Unauthorized response body:', err);
           alert('Authorization failed — please login again.');
@@ -74,7 +71,7 @@
         }
 
         if (!res.ok) {
-          // other errors
+        
           alert('Failed to load project details. Please try again.');
           return;
         }

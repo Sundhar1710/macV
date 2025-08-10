@@ -1,5 +1,3 @@
-# app/routes/auth.py
-
 from flask import Blueprint, request, jsonify
 from app.models.user_model import User
 from app import db
@@ -8,7 +6,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 auth_bp = Blueprint('auth_bp', __name__)
 
-# Register new user
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()

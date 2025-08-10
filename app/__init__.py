@@ -43,8 +43,7 @@ def create_app():
         if not username:
             return redirect(url_for('index'))
         return render_template('home.html', username=username)
-    
-    # in app/__init__.py — replace the existing project_detail route with this
+
     @app.route('/project_detail/<int:project_id>')
     def project_detail(project_id):
         username = request.args.get('username', '')
@@ -53,9 +52,6 @@ def create_app():
     @app.route('/add_task')
     def add_task_page():
         return render_template('add_task.html')
-
-
-
 
     return app
 
